@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+    <div>
+        Value is :
+        <p id="holder"></p>
+    </div>
+    <button onclick="handleSet(1)">ON</button>
+    <button onclick="handleSet(0)">OFF</button>
+
+    <ul id="messages">
+
+    </ul>
+    <script src="https://cdn.socket.io/4.5.3/socket.io.min.js" integrity="sha384-WPFUvHkB1aHA5TDSZi6xtDgkF0wXJcIIxXhC6h8OT8EH3fC5PWro5pWJ1THjcfEi" crossorigin="anonymous"></script>
+    <script>
+        const holder = document.querySelector("#holder")
+        const messages = document.querySelector("#messages")
+
+
+        const socket = io();
+        socket.on('analog-reading', function(msg) {
+            // if child node is more than 10, remove the first child
+            if (messages.childNodes.length > 10) {
+                messages.removeChild(messages.childNodes[0])
+            }
+            var item = document.createElement('li');
+            item.textContent = msg;
+            messages.appendChild(item);
+            messages.scrollTo(0, messages.scrollHeight);
+
+        });
+        document.addEventListener("DOMContentLoaded", () => {
+            fetch("/led/13/state").then(e => e.json()).then(e => {
+                holder.textContent = e.state == 1 ? "ON" : "FALSE"
+            })
+        });
+        async function handleSet(v) {
+            const res = await fetch(`/led/13/set`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    value: v
+                }),
+
+            })
+            const data = await res.json()
+            holder.textContent = data.state == 1 ? "ON" : "FALSE"
+        }
+    </script>
+</body>
+
+</html>
